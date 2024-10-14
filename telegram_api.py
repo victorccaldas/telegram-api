@@ -54,10 +54,11 @@ class TelegramAPI:
         return response.content
 
 
-class TelegramUtils:  
+class TelegramUtils:
+    def __init__(self, api):
+        self.api = api
 
-    @staticmethod
-    def split_msg(text, char_limit=4096):
+    def split_msg(self, text, char_limit=4096):
         all_parts = [part + '\n' for part in text.split('\n')]
         split_messages = []
         current_message = ''
@@ -75,14 +76,13 @@ class TelegramUtils:
         split_messages.append(current_message)
         return split_messages
            
-    @staticmethod
-    def send_custom_formatted_message(api, og_text, parse_mode='MarkdownV2', chat_id=None, is_already_parsed=False):
+    def send_custom_formatted_message(self, og_text, parse_mode='MarkdownV2', chat_id=None, is_already_parsed=False):
         if parse_mode and not is_already_parsed:
             text = TelegramUtils.escape_only_wanted_characters(og_text)
         else:
             text = og_text
 
-        response = api.send_message(text, parse_mode=parse_mode, chat_id=chat_id)
+        response = self.api.send_message(text, parse_mode=parse_mode, chat_id=chat_id)
         json_data = json.loads(response.content.decode('utf-8'))
 
         if response.status_code != 200:
@@ -91,21 +91,20 @@ class TelegramUtils:
 
             if "can't parse entities" in error:
                 print(f'Error parsing message. Sending without parsing.')
-                return TelegramUtils.send_custom_formatted_message(api, og_text, parse_mode='', chat_id=chat_id)
+                return TelegramUtils.send_custom_formatted_message(self.api, og_text, parse_mode='', chat_id=chat_id)
 
             elif "is too long" in error:
                 print(f'Message is too big: {len(text)} chars. Splitting into smaller chunks.')
                 split_messages = TelegramUtils.split_msg(text, char_limit=4096)
                 for msg in split_messages:
-                    TelegramUtils.send_custom_formatted_message(api, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True)
+                    TelegramUtils.send_custom_formatted_message(self.api, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True)
             
             else:
                 msg = "Erro não previsto ao enviar mensagem no Telegram:" + str(response.content) +'\n\nMsg:\n' + text
                 print(msg)
-                return api.send_message(msg, parse_mode='', chat_id=chat_id)
+                return self.api.send_message(msg, parse_mode='', chat_id=chat_id)
 
-    @staticmethod
-    def escape_only_wanted_characters(text):
+    def escape_only_wanted_characters(self, text):
         def escape_markdown_v2(text):
             escape_chars = r'\*_\[\]()~>`#+-=|{}.!'
             return re.sub(r'(['+escape_chars+'])', r'\\\1', text)
@@ -117,8 +116,7 @@ class TelegramUtils:
 
         return text
 
-    @staticmethod
-    def ping_to_inform_activity(api):
+    def ping_to_inform_activity(self):
 
         # load the file 'last_sent_ping_message_id.txt' if it exists
         try:
@@ -132,7 +130,7 @@ class TelegramUtils:
             api.delete_message(last_sent_ping_message_id)
 
         # send a new ping message
-        response = api.send_message('Checkpoint: a execução segue ativa.', parse_mode='')
+        response = self.api.send_message('Checkpoint: a execução segue ativa.', parse_mode='')
         response_dict = json.loads(response.content)
         last_sent_ping_message_id = response_dict['result']['message_id']
 
@@ -142,8 +140,7 @@ class TelegramUtils:
 
         return response
 
-    @staticmethod
-    def send_ping_message_every_morning_and_night(api, sent_ping_message):
+    def send_ping_message_every_morning_and_night(self, sent_ping_message):
         current_time = datetime.now().time()
         if (current_time >= datetime.strptime('8:00', '%H:%M').time() and current_time <= datetime.strptime('8:05', '%H:%M').time()) \
             or (current_time >= datetime.strptime('20:54', '%H:%M').time() and current_time <= datetime.strptime('20:59', '%H:%M').time()):
@@ -156,12 +153,22 @@ class TelegramUtils:
         return sent_ping_message
     
 
-    if __name__ == '__main__':
-        # test:
-        api_key = 'your_api_key'
-        personal_id = 'your_personal_chat_id'
-        group_id = 'your_group_chat_id'
+if __name__ == '__main__':
+    # test:
+    api_key = None # your_api_key
+    personal_id = None # your_personal_chat_id
+    group_id = None # your_group_chat_id
 
-        TG = TelegramAPI(api_key, personal_id, group_id)
+    assert api_key, 'You must provide your api_key'
+    assert personal_id or group_id, 'You must provide a chat_id'
 
-        TG.send_message('test',chat_id=TG.personal_id)
+    TelegramAPI = TelegramAPI(api_key, personal_id, group_id)
+
+    TelegramUtils = TelegramUtils(TelegramAPI)
+
+    TelegramAPI.send_message('test',chat_id=TelegramAPI.personal_id)
+
+    TelegramUtils.send_custom_formatted_message('test2', chat_id=TelegramAPI.personal_id)
+
+
+
