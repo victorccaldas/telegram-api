@@ -29,6 +29,9 @@ class TelegramAPI:
         return r
 
     def send_message(self, msg, parse_mode='MarkdownV2', chat_id=None, allow_personal_message_only_to_self=True):
+        '''
+        Usar 'send_custom_formatted_message' para garantir uso de escapamento customizado e lidar com mensagens muito grandes.
+        '''
         if allow_personal_message_only_to_self and not str(chat_id) == self.personal_id:
             chat_id = self.group_id
 
@@ -77,6 +80,9 @@ class TelegramUtils:
         return split_messages
            
     def send_custom_formatted_message(self, og_text, parse_mode='MarkdownV2', chat_id=None, is_already_parsed=False):
+        '''
+        Essa função é usada pra garantir uso de escapamento customizado, e também para lidar com mensagens muito grandes.
+        '''
         if parse_mode and not is_already_parsed:
             text = TelegramUtils.escape_only_wanted_characters(og_text)
         else:
