@@ -53,8 +53,6 @@ class TelegramAPI:
         
         return response.content
     
-    def test_func2(self):
-        print('Hello from TelegramAPI')
 
 class TelegramUtils:
     def __init__(self, api):
