@@ -70,6 +70,7 @@ def initiate_credentials(TelegramAPI, TelegramUtils):
 
     return TelegramAPI, TelegramUtils
 
-TelegramAPI, TelegramUtils = initiate_credentials(install_and_import_module())
+TelegramAPI, TelegramUtils = install_and_import_module()
+TelegramAPI, TelegramUtils = initiate_credentials(TelegramAPI, TelegramUtils)
 
 print('\n\n')
