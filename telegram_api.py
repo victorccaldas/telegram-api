@@ -52,7 +52,9 @@ class TelegramAPI:
             print("Error deleting message.")
         
         return response.content
-
+    
+    def test_func(self):
+        print('Hello from TelegramAPI')
 
 class TelegramUtils:
     def __init__(self, api):
