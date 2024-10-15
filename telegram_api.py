@@ -133,7 +133,7 @@ class TelegramUtils:
 
         # delete the last_sent_ping_message_id if it exists
         if last_sent_ping_message_id:
-            api.delete_message(last_sent_ping_message_id)
+            self.api.delete_message(last_sent_ping_message_id)
 
         # send a new ping message
         response = self.api.send_message('Checkpoint: a execução segue ativa.', parse_mode='')
@@ -151,7 +151,7 @@ class TelegramUtils:
         if (current_time >= datetime.strptime('8:00', '%H:%M').time() and current_time <= datetime.strptime('8:05', '%H:%M').time()) \
             or (current_time >= datetime.strptime('20:54', '%H:%M').time() and current_time <= datetime.strptime('20:59', '%H:%M').time()):
             if not sent_ping_message:
-                TelegramUtils.ping_to_inform_activity(api)
+                TelegramUtils.ping_to_inform_activity(self.api)
                 sent_ping_message = True
         else:
             sent_ping_message = False
