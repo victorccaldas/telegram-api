@@ -97,13 +97,13 @@ class TelegramUtils:
 
             if "can't parse entities" in error:
                 print(f'Error parsing message. Sending without parsing.')
-                return TelegramUtils.send_custom_formatted_message(self.api, og_text, parse_mode='', chat_id=chat_id)
+                return TelegramUtils.send_custom_formatted_message(self, og_text, parse_mode='', chat_id=chat_id)
 
             elif "is too long" in error:
                 print(f'Message is too big: {len(text)} chars. Splitting into smaller chunks.')
                 split_messages = TelegramUtils.split_msg(text, char_limit=4096)
                 for msg in split_messages:
-                    TelegramUtils.send_custom_formatted_message(self.api, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True)
+                    TelegramUtils.send_custom_formatted_message(self, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True)
             
             else:
                 msg = "Erro não previsto ao enviar mensagem no Telegram:" + str(response.content) +'\n\nMsg:\n' + text
@@ -151,7 +151,7 @@ class TelegramUtils:
         if (current_time >= datetime.strptime('8:00', '%H:%M').time() and current_time <= datetime.strptime('8:05', '%H:%M').time()) \
             or (current_time >= datetime.strptime('20:54', '%H:%M').time() and current_time <= datetime.strptime('20:59', '%H:%M').time()):
             if not sent_ping_message:
-                TelegramUtils.ping_to_inform_activity(self.api)
+                TelegramUtils.ping_to_inform_activity(self)
                 sent_ping_message = True
         else:
             sent_ping_message = False
