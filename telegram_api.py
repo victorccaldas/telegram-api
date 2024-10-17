@@ -110,7 +110,8 @@ class TelegramUtils:
                 print(msg)
                 return self.api.send_message(msg, parse_mode='', chat_id=chat_id)
 
-    def escape_only_wanted_characters(self, text):
+    @staticmethod
+    def escape_only_wanted_characters(text):
         def escape_markdown_v2(text):
             escape_chars = r'\*_\[\]()~>`#+-=|{}.!'
             return re.sub(r'(['+escape_chars+'])', r'\\\1', text)
