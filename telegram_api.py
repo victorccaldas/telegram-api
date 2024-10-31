@@ -44,7 +44,12 @@ class TelegramAPI:
             print("\n[Telegram]: ", msg, '\n')
         else:
             print(response.content)
-            return self.send_message(f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg, parse_mode='', chat_id=chat_id)
+            error_msg = f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg
+            anti_error_msg = '\n\n[...] (Mensagem truncada por exceder o limite de caracteres.)'
+            error_msg_lim = 4096 - len(anti_error_msg)
+            error_msg = error_msg[:error_msg_lim] + anti_error_msg
+
+            return self.send_message(error_msg, parse_mode='', chat_id=chat_id)
 
         return response
     
