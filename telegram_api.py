@@ -43,14 +43,27 @@ class TelegramAPI:
         if response.status_code == 200:
             print("\n[Telegram]: ", msg, '\n')
         else:
-            print(response.content)
-            error_msg = f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg
-            anti_error_msg = '\n\n[...] (Mensagem truncada por exceder o limite de caracteres.)'
-            error_msg_lim = 4096 - len(anti_error_msg)
-            error_msg = error_msg[:error_msg_lim] + anti_error_msg
+            #print(response.content)
+            #error_msg = f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg
+            #anti_error_msg = '\n\n[...] (Mensagem truncada por exceder o limite de caracteres.)'
+            #error_msg_lim = 4095 - len(anti_error_msg)
+            #error_msg = error_msg[:error_msg_lim] + anti_error_msg
+            #return self.send_message(error_msg, parse_mode='', chat_id=chat_id)
+            ...
+            # O acima foi removido pois causava um loop infinito de mensagens de erro, e não permitia que o erro fosse tratado pela função send_custom_formatted_message
+            # Pelo menos raise erro caso o caller não seja a função send_custom_formatted_message
+            import inspect
+            stack = inspect.stack()
+            # The caller's frame is the second in the stack (index 1)
+            caller_frame = stack[1]
+            # Get the caller function's name
+            caller_name = caller_frame.function
 
-            return self.send_message(error_msg, parse_mode='', chat_id=chat_id)
-
+            if caller_name != 'send_custom_formatted_message':
+                error_msg = f"Erro ao enviar mensagem no Telegram:\n{response.content}"
+                self.send_message(error_msg, parse_mode='', chat_id=chat_id)
+                raise Exception(error_msg)
+            
         return response
     
     def delete_message(self, id):
@@ -106,7 +119,7 @@ class TelegramUtils:
 
             elif "is too long" in error:
                 print(f'Message is too big: {len(text)} chars. Splitting into smaller chunks.')
-                split_messages = TelegramUtils.split_msg(text, char_limit=4096)
+                split_messages = TelegramUtils.split_msg(self, text=text, char_limit=4096)
                 for msg in split_messages:
                     TelegramUtils.send_custom_formatted_message(self, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True)
             
