@@ -130,17 +130,26 @@ class TelegramUtils:
 
     @staticmethod
     def escape_only_wanted_characters(text):
+        '''
+        OBS. Diferentemente dos outros caractéres, os '_' (underline) devem ser escapados com '/' ao invés de '\' quando utilizando em markdown,
+            Pois diferente dos outros, eles são comumente usados em meio a textos ou frases sem intenção de markdown,
+            o que estava causando bug na mensagem.
+        '''
         def escape_markdown_v2(text):
             escape_chars = r'\*_\[\]()~>`#+-=|{}.!'
             return re.sub(r'(['+escape_chars+'])', r'\\\1', text)
-        
+            
+        #text = re.escape(text) # escape special characters # removi esta parte pois junto com a função escape_markdown_v2, estava duplicadamente escaping alguns caracteres, consequentemente escaping o \ do escaping anterior e não o caractere em sí.
         text = escape_markdown_v2(text)
 
-        # remove escaping from unwanted escapes such as markdown
-        text = text.replace('\*', '*').replace('\ ', ' ').replace('\\n', '\n') 
+        # remove escaping from unwanted escapes such as markdown applications
+        text = text.replace('\*', '*').replace('\ ', ' ').replace('\\n', '\n')
+
+        # remove special escaping (utilizando '/' ao invés do padrão '\')
+        text = text.replace('\/\_', '_')
 
         return text
-
+    
     def ping_to_inform_activity(self):
 
         # load the file 'last_sent_ping_message_id.txt' if it exists
