@@ -2,7 +2,6 @@ import requests
 import re
 import json
 from datetime import datetime
-from time import sleep
 
 
 class TelegramAPI:
@@ -38,7 +37,7 @@ class TelegramAPI:
         r = requests.post(endpoint_url, files={'document': (file_name+file_extension, file_binary)})
         return r
 
-    def send_message(self, msg, parse_mode='MarkdownV2', chat_id=None, allow_personal_message_only_to_self=True, repeated_tries=0):
+    def send_message(self, msg, parse_mode='MarkdownV2', chat_id=None, allow_personal_message_only_to_self=True):
         '''
         Usar 'send_custom_formatted_message' para garantir uso de escapamento customizado e lidar com mensagens muito grandes.
         '''
@@ -53,10 +52,6 @@ class TelegramAPI:
         
         if response.status_code == 200:
             print("\n[Telegram]: ", msg, '\n')
-        elif response.status_code == 502 and repeated_tries < 3:
-            print(f"Bad Gateway Error sending message. Retrying... (try {repeated_tries+1}/3)")
-            sleep(3)
-            return self.send_message(msg, parse_mode=parse_mode, chat_id=chat_id, allow_personal_message_only_to_self=allow_personal_message_only_to_self, repeated_tries=repeated_tries+1)
         else:
             #print(response.content)
             #error_msg = f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg
