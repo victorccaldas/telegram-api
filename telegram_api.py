@@ -107,7 +107,7 @@ class TelegramUtils:
         split_messages.append(current_message)
         return split_messages
            
-    def send_custom_formatted_message(self, og_text, parse_mode='MarkdownV2', chat_id=None, is_already_parsed=False, allow_personal_message_only_to_self=True):
+    def send_safe_and_custom_formatted_message(self, og_text, parse_mode='MarkdownV2', chat_id=None, is_already_parsed=False, allow_personal_message_only_to_self=True):
         '''
         Essa função é usada pra garantir uso de escapamento customizado, e também para lidar com mensagens muito grandes.
         '''
@@ -125,13 +125,13 @@ class TelegramUtils:
 
             if "can't parse entities" in error:
                 print(f'Error parsing message. Sending without parsing.')
-                return TelegramUtils.send_custom_formatted_message(self, og_text, parse_mode='', chat_id=chat_id, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
+                return TelegramUtils.send_safe_and_custom_formatted_message(self, og_text, parse_mode='', chat_id=chat_id, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
 
             elif "is too long" in error:
                 print(f'Message is too big: {len(text)} chars. Splitting into smaller chunks.')
                 split_messages = TelegramUtils.split_msg(self, text=text, char_limit=4096)
                 for msg in split_messages:
-                    TelegramUtils.send_custom_formatted_message(self, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
+                    TelegramUtils.send_safe_and_custom_formatted_message(self, msg, parse_mode=parse_mode, chat_id=chat_id, is_already_parsed=True, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
             
             else:
                 msg = "Erro não previsto ao enviar mensagem no Telegram:" + str(response.content) +'\n\nMsg:\n' + text
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     TelegramAPI.send_message(TelegramAPI, 'test',chat_id=TelegramAPI.personal_id)
 
-    TelegramUtils.send_custom_formatted_message('test2', chat_id=TelegramAPI.personal_id)
+    TelegramUtils.send_safe_and_custom_formatted_message('test2', chat_id=TelegramAPI.personal_id)
 
 
 
