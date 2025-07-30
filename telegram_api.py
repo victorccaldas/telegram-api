@@ -118,7 +118,7 @@ class TelegramUtils:
 
         response = self.api.send_message(text, parse_mode=parse_mode, chat_id=chat_id, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
         json_data = json.loads(response.content.decode('utf-8'))
-
+        
         if response.status_code != 200:
             assert 'description' in json_data, f"Erro ao enviar mensagem no Telegram: description not in json_data\nResponse: {response.content}"
             error = json_data['description']
@@ -137,7 +137,9 @@ class TelegramUtils:
                 msg = "Erro não previsto ao enviar mensagem no Telegram:" + str(response.content) +'\n\nMsg:\n' + text
                 print(msg)
                 return self.api.send_message(msg, parse_mode='', chat_id=chat_id, allow_personal_message_only_to_self=allow_personal_message_only_to_self)
-
+        
+        return response
+        
     @staticmethod
     def escape_only_wanted_characters(text):
         '''
