@@ -2,6 +2,8 @@ import requests
 import re
 import json
 from datetime import datetime
+import inspect
+
 
 
 class TelegramAPI:
@@ -39,7 +41,7 @@ class TelegramAPI:
 
     def send_message(self, msg, parse_mode='MarkdownV2', chat_id=None, allow_personal_message_only_to_self=True):
         '''
-        Usar 'send_custom_formatted_message' para garantir uso de escapamento customizado e lidar com mensagens muito grandes.
+        Usar 'send_safe_and_custom_formatted_message' para garantir uso de escapamento customizado e lidar com mensagens muito grandes.
         '''
         # permite enviar msg na conversa particular apenas se o chat_id == meuid
         if allow_personal_message_only_to_self:
@@ -53,24 +55,16 @@ class TelegramAPI:
         if response.status_code == 200:
             print("\n[Telegram]: ", msg, '\n')
         else:
-            #print(response.content)
-            #error_msg = f'Envio da mensagem com parse_mode={parse_mode} falhou. Mensagem crua:\n'+msg
-            #anti_error_msg = '\n\n[...] (Mensagem truncada por exceder o limite de caracteres.)'
-            #error_msg_lim = 4095 - len(anti_error_msg)
-            #error_msg = error_msg[:error_msg_lim] + anti_error_msg
-            #return self.send_message(error_msg, parse_mode='', chat_id=chat_id)
-            ...
-            # O acima foi removido pois causava um loop infinito de mensagens de erro, e não permitia que o erro fosse tratado pela função send_custom_formatted_message
-            # Pelo menos raise erro caso o caller não seja a função send_custom_formatted_message
-            import inspect
             stack = inspect.stack()
             # The caller's frame is the second in the stack (index 1)
             caller_frame = stack[1]
             # Get the caller function's name
             caller_name = caller_frame.function
 
-            if caller_name != 'send_custom_formatted_message':
-                error_msg = f"Erro ao enviar mensagem no Telegram:\n{response.content}"
+            # só retornar erro se a função que chamou for diferente de 'send_safe_and_custom_formatted_message',
+            # pois essa função tem sua própria lógica de tratamento de erros
+            if caller_name != 'send_safe_and_custom_formatted_message':
+                error_msg = f"Erro em send_message ao enviar mensagem no Telegram:\n{response.content}"
                 self.send_message(error_msg, parse_mode='', chat_id=chat_id)
                 raise Exception(error_msg)
             
